@@ -1,3 +1,0 @@
-{"ts":1364047980314,"silentsave":true,"restoring":false,"patch":[[{"diffs":[[1,"#!/bin/env python3\n# -*- encoding:utf-8 -*-\nfrom terminal import Terminal\n\ndef main():\n    interface = Terminal()\n    interface.start()\n\n\nif __name__ == \"__main__\":\n    main()\n"]],"start1":0,"start2":0,"length1":0,"length2":176}]],"length":176}
-{"contributors":[],"silentsave":true,"ts":1364077850415,"patch":[[{"diffs":[[1,"python3 echecs.py"],[0,"#!/bin/e"]],"start1":0,"start2":0,"length1":8,"length2":25},{"diffs":[[0,"  main()"],[-1,"\n"]],"start1":184,"start2":184,"length1":9,"length2":8}]],"length":192,"saved":false}
-{"ts":1364077854508,"patch":[[{"diffs":[[-1,"python3 echecs.py"],[0,"#!/b"]],"start1":0,"start2":0,"length1":21,"length2":4}]],"length":175,"saved":false}
