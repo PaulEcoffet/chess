@@ -34,6 +34,9 @@ class Plateau():
 
     def getJoueurNoir(self):
         return self.joueurNoir
+    
+    def getJoueurBlanc(self):
+        return self.joueurBlanc
 
     def getPiece(self, x, y):
         return self.t[x][y]
@@ -49,7 +52,7 @@ class Plateau():
         piece = self.getPiece(xd, yd)
         if piece is not None:
             if piece.get_joueur() == joueur:
-                if piece.peut_bouger(xa, ya):
+                if piece.peutBouger(xa, ya):
                     self.setPiece(piece, xa, ya)
                     self.delPiece(xd, yd)
                 else:

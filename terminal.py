@@ -1,4 +1,5 @@
 from plateau import Plateau
+from profilesloader import ProfilesLoader
 
 def reverse_range(reverse, start, stop=None, step=1):
     if stop is None:
@@ -12,6 +13,7 @@ def reverse_range(reverse, start, stop=None, step=1):
 class Terminal():
     def __init__(self):
         self.p = None
+        self.profileloader = ProfilesLoader("profiles.chess")
 
     def afficher_plateau(self, main):
         """Affiche le plateau, le joueur qui a la main est en bas"""
@@ -19,14 +21,15 @@ class Terminal():
             reverse = False
         else:
             reverse = True
-        entete = [chr(i) for i in reverse_range(reverse, ord('A'), ord('H')+1)]
+        entete = [chr(i) for i in 
+            reverse_range(not reverse, ord('A'), ord('H')+1)]
         print("  ", end="") # padding
         print(*entete, sep=" "*3)
         print("\u2554", "\u2550\u2550\u2550\u2564"*7,
                       "\u2550\u2550\u2550\u2557", sep="")
         for i in reverse_range(reverse, 8):
             left = True
-            for j in reverse_range(reverse, 8):
+            for j in reverse_range(not reverse, 8):
                 if left:
                     print("\u2551", end=" ")
                     left = False
@@ -51,11 +54,37 @@ class Terminal():
         print("  ", end="") # padding
         print(*entete, sep=" "*3)
 
+    def selectProfile(self, nom, taken):
+        profiles = self.profilesLoader.getProfiles()
+        profiles = [profile for profile in profiles if profile not in taken]
+        print("Joueur ", nom, ", sélectionnez votre profil.", sep="")
+        i = 1
+        for profile in profiles:
+            print(i,": ", profile.nom, " (elo: ", profile.elo, ")", sep="")
+            i += 1
+        print("n: Nouveau profil")
+        run = True
+        while run:
+            entree = input(">>> ")
+            try:
+                entree = int(entree)
+            except ValueError:
+                if entree[0] == "n":
+                    choisi = self.nouveauProfil()
+                    run = False
+            else:
+                if entree >= 1 and entree <= i-1:
+                    choisi = profiles[entree-1]
+                    run = False
+            if run:
+                print("Entrée non valide")
+
     def start(self):
         """Démarrer l'interface"""
-        joueur1 = 0
-        joueur2 = 1
-        self.startGame(joueur1, joueur2)
+        print("Bienvenue dans le jeu d'échec de Loïc Labache et Paul Ecoffet")
+        blanc = self.selectProfile("blanc")
+        noir = self.selectProfile("noir", [blanc])
+        self.startGame(blanc, noir)
 
     def ask(self, joueur):
         """Demande au joueur d'entrer son coup et le convertit

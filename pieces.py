@@ -1,4 +1,4 @@
-class Piece():
+class Piece:
     def __init__(self, plateau, joueur, x, y):
         self.joueur = joueur
         self.plateau = plateau
@@ -18,7 +18,7 @@ class Piece():
     def get_joueur(self):
         return self.joueur
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         pass
 
 class Pion(Piece):
@@ -28,7 +28,7 @@ class Pion(Piece):
         self.double = True
         self.a_double = False
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         print(self.x, self.y, x_a, y_a)
         if self.joueur is self.plateau.getJoueurNoir():
             sens = -1
@@ -45,7 +45,7 @@ class Tour(Piece):
         super().__init__(plateau, joueur, x, y)
         self.repres = "t"
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         if self.plateau.getPiece(x_a, y_a) is not None:
             if self.plateau.getPiece(x_a, y_a).get_joueur() is self.joueur:
                 return False
@@ -70,7 +70,7 @@ class Cavalier(Piece):
         super().__init__(plateau, joueur, x, y)
         self.repres = "c"
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         pass
 
 class Fou(Piece):
@@ -78,7 +78,7 @@ class Fou(Piece):
         super().__init__(plateau, joueur, x, y)
         self.repres = "f"
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         pass
 
 class Dame(Piece):
@@ -86,15 +86,15 @@ class Dame(Piece):
         super().__init__(plateau, joueur, x, y)
         self.repres = "d"
 
-    def peut_bouger(self, x_a, y_a):
-        return Tour.peut_bouger(self) or Fou.peut_bouger(self)
+    def peutBouger(self, x_a, y_a):
+        return Tour.peutBouger(self) or Fou.peutBouger(self)
 
 class Roi(Piece):
     def __init__(self, plateau, joueur, x, y):
         super().__init__(plateau, joueur, x, y)
         self.repres = "r"
 
-    def peut_bouger(self, x_a, y_a):
+    def peutBouger(self, x_a, y_a):
         mouvement = [(x,y) for x in range(-1, 2) for y in range(-1, 2)
             if not (x == y and x == 0)]
         if self.plateau.getPiece(x_a, y_a) is not None:
