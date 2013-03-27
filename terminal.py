@@ -1,5 +1,6 @@
 from plateau import Plateau
 from profilesloader import ProfilesLoader
+from joueur import Joueur
 
 def reverse_range(reverse, start, stop=None, step=1):
     if stop is None:
@@ -13,17 +14,19 @@ def reverse_range(reverse, start, stop=None, step=1):
 class Terminal():
     def __init__(self):
         self.p = None
-        self.profileloader = ProfilesLoader("profiles.chess")
+        self.profilesLoader = ProfilesLoader("profiles.chess")
 
-    def afficher_plateau(self, main):
-        """Affiche le plateau, le joueur qui a la main est en bas"""
-        if main == 1:
+    def afficher_plateau(self, main, blanc):
+        """Affiche le plateau, le joueur qui a la main est en bas
+
+        Le joueur blanc sert de référence à l'affichage"""
+        if main is not blanc:
             reverse = False
         else:
             reverse = True
-        entete = [chr(i) for i in 
+        entete = [chr(i) for i in
             reverse_range(not reverse, ord('A'), ord('H')+1)]
-        print("  ", end="") # padding
+        print("  ", end="")  # padding
         print(*entete, sep=" "*3)
         print("\u2554", "\u2550\u2550\u2550\u2564"*7,
                       "\u2550\u2550\u2550\u2557", sep="")
@@ -54,9 +57,11 @@ class Terminal():
         print("  ", end="") # padding
         print(*entete, sep=" "*3)
 
-    def selectProfile(self, nom, taken):
+    def selectProfile(self, nom, taken=[]):
         profiles = self.profilesLoader.getProfiles()
-        profiles = [profile for profile in profiles if profile not in taken]
+        takennoms = [profile.nom for profile in taken]
+        profiles = [profile for profile in profiles.values()
+                if profile.nom not in takennoms]
         print("Joueur ", nom, ", sélectionnez votre profil.", sep="")
         i = 1
         for profile in profiles:
@@ -78,6 +83,37 @@ class Terminal():
                     run = False
             if run:
                 print("Entrée non valide")
+        return choisi
+
+    def nouveauProfil(self):
+        """Dessine l'interface de création de nouveau profil"""
+        run = True
+        profiles = self.profilesLoader.getProfiles()
+        while run:
+            nom = str(input("Entrez le nom du profil : "))
+            if not nom in profiles.keys():
+                joueur = Joueur(nom, 1200)  # Classement ELO niveau débutant
+                run = False
+            else:
+                print("Un profil porte déjà ce nom. \
+                        Veuillez en utilisez un autre.")
+            print("Si vous possèdez un score ELO, veuillez l'indiquer, \
+                    sinon, laissez le champ vide")
+            run = True
+            while run:
+                entree = input("Votre score ELO (1200) :")
+                try:
+                    joueur.elo = int(entree)
+                except:
+                    if(entree == ""):
+                        run = False
+                    else:
+                        print("Veuillez entrer un score entier.")
+                else:
+                    run = False
+            self.profilesLoader.saveProfile(joueur)
+            return joueur
+
 
     def start(self):
         """Démarrer l'interface"""
@@ -90,20 +126,20 @@ class Terminal():
         """Demande au joueur d'entrer son coup et le convertit
 en coordonnées"""
         # TODO: Vérifier entrée utilisateur
-        entree = str(input("Entrez votre coup: "))
+        entree = str(input(joueur.nom +", entrez votre coup: "))
         dep, arr = entree.split(" ")
         piece = (int(dep[1])-1, ord(dep[0].lower()) - ord('a'))
         to = (int(arr[1])-1, ord(arr[0].lower()) - ord('a'))
         return (piece, to)
 
-    def startGame(self, joueur1, joueur2):
+    def startGame(self, blanc, noir):
         """Démarre une nouvelle partie"""
         self.p = Plateau()
-        self.p.setup(joueur1, joueur2)
+        self.p.setup(blanc, noir)
         gagnant = None
-        main = joueur1
+        main = blanc
         while gagnant == None:
-            self.afficher_plateau(main)
+            self.afficher_plateau(main, blanc)
             run = True
             while run:
                 piece, to = self.ask(main)
@@ -114,7 +150,7 @@ en coordonnées"""
                     print(e)
                 else:
                     run = False
-            if main == joueur1:
-                main = joueur2
+            if main == blanc:
+                main = noir
             else:
-                main = joueur1
+                main = blanc
