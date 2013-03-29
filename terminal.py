@@ -41,7 +41,7 @@ class Terminal():
                 if self.p.getPiece(i,j) is not None:
                     joueur = self.p.getPiece(i,j).get_joueur()
                     piece = self.p.getPiece(i,j).get_repres()
-                    if joueur == 1:
+                    if joueur is blanc:
                         print(piece.upper(), end=" ")
                     else:
                         print(piece, end=" ")

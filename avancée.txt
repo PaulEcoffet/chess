@@ -1,0 +1,104 @@
+Projet ASD L1S2
+
+Travaux effectués (1/03/13)
+=================
+
+Nous avons commncé à réfléchir à l'architecture de notre programme en essayant
+au maximum de séparer la logique de celui-ci de son affichage.  Par la suite,
+nous avons débuté l'implémentation du plateau de jeu et des différentes pièces
+qui le constituent. Il est alors possible d'initialiser le plateau en plaçant
+les pièces sur leur position de départ.  Finalement, nous avons gérer
+l'affichage de ce plateau dans la console.
+
+
+Projets futurs
+==============
+
+Nous devons créer les méthodes permettant au joueur de déplacer une pièce et de
+vérifier si ce déplacement est valide. Nous souhaitons aussi détecter l'échec
+et l'échec et mat afin de déclencher une fin de partie.  Nous envisageons de
+plus de permettre la sauvegarde de partie, la gestion du score par le système
+Elo.
+
+Enfin, si nous souhaitons séparer l'interface de la logique interne du
+programme, c'est afin de pouvoir aisément implémenter une éventuelle interface
+graphique.
+
+
+
+
+===============================================================================
+
+
+
+
+
+Travaux effectués (8/03/13)
+=================
+
+Nous avons commencé à travailler sur la fonction peut_bouger notamment pour le
+roi et le pion (déplacement et le fait d'être hors du plateau ou non) mais ce
+travail n'est pas terminé.  Nous avons aussi modifié le comportement de
+quelques méthodes dans pièces mais cette modification engendre l'échec du
+lancement de l'affichage du plateau mais ce problème est facilement résolvable
+(nous n'avons juste pas pris le temps pour l'instant de le faire).
+
+
+Projets futurs
+==============
+
+Nous devons corriger le problème d'affichage du plateau.  Et espérons terminer
+la fonction peut_bouger (au moins terminer le déplacement du roi et du pion).
+La fonction pour le système de classement Elo devrait également faire son
+apparition d'ici la semaine prochaine.
+
+
+
+===============================================================================
+
+
+
+Travaux effectués (22/03/13)
+=================
+
+Nous avons avancé sur l'interface. Maintenant, le plateau s'inverse pour que le
+joueur qui a la main ait ses pièces en bas du plateau, comme sur un jeu
+d'échecs "réel". Au passage, la fonction "afficher_plateau" a été grandement
+simplifié.  Les pièces peuvent désormais être déplacés. Pour l'instant, seul
+les pions, le roi et la tour sont capables de bouger mais il reste d'autres
+peut_bouger à coder. Le code de classement Elo a un début d'implémentation,
+mais le code doit encore être grandement nettoyé.
+
+Projets futurs
+==============
+
+Nous devons terminer la fonction peut_bouger (au moins terminer le déplacement
+du roi et du pion).  Gérer le roque serait important, tout comme la prise en
+passant.  Un système de gestion de profil doit être implémenté (implique un
+changement important de l'implémentation des joueurs) Un système de sauvegarde
+va être instauré. Nous devons gérer l'échec et l'échec et mat. Le match nul
+serait un plus.  La fonction pour le système de classement Elo devrait
+également faire son apparition d'ici la semaine prochaine.
+
+===============================================================================
+
+Travaux effectués (29/03/13)
+=================
+
+Nous avons mis en place un système de profil avec sauvegarde de ces derniers.
+Ils comprennent avec eux le score Elo du joueur. L'implémentation du calcul du
+Elo n'a finalement pas avancé, tout comme le code des fonctions peutBouger des
+pièces.
+
+Projets futurs
+==============
+Nous devons terminer la fonction peutBouger (au moins terminer le déplacement
+du roi et du pion).  Gérer le roque serait important, tout comme la prise en
+passant. Nous devons gérer l'échec et l'échec et mat. Le match nul
+serait un plus.  La fonction pour le système de classement Elo devrait
+également faire son apparition d'ici la semaine prochaine.
+
+Enfin, nous comptons faire une interface graphique en tkinter
+
+--
+Loïc LABACHE & Paul ECOFFET
