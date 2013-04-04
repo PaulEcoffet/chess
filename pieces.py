@@ -71,7 +71,83 @@ class Cavalier(Piece):
         self.repres = "c"
 
     def peutBouger(self, x_a, y_a):
-        pass
+        if self.plateau.getPiece(x_a, y_a) is not None:
+            if self.plateau.getPiece(x_a, y_a).get_joueur() is self.joueur:
+                return False
+        if self.x+2==x_a and self.y+1==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x+2==x_a and self.y-1==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x+1==x_a and self.y-2==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x+1==x_a and self.y+2==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x-2==x_a and self.y+1==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x-2==x_a and self.y-1==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x-1==x_a and self.y-2==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        if self.x-1==x_a and self.y+2==y_a :
+            sens_c=(y_a - self.y)//abs(y_a - self.y)
+            sens_l=(x_a - self.x)//abs(x_a - self.x)
+            for j in range(self.y+sens_c,y_a,sens_c):
+                pass
+            return True
+            for i in range(self.x+sens_l,x_a,sens_l):
+                pass
+            return True
+        else :
+            return False
 
 
 class Fou(Piece):
@@ -80,7 +156,9 @@ class Fou(Piece):
         self.repres = "f"
 
     def peutBouger(self, x_a, y_a):
-        pass
+        if self.plateau.getPiece(x_a, y_a) is not None:
+            if self.plateau.getPiece(x_a, y_a).get_joueur() is self.joueur:
+                return False
 
 
 class Dame(Piece):
