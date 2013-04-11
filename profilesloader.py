@@ -4,7 +4,8 @@ import os.path
 
 class ProfilesLoader:
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = os.path.join(
+            os.path.realpath(os.path.dirname(__file__)), filename)
         self.profiles = []
         self.lastUpdate = 0
 

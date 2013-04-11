@@ -51,7 +51,7 @@ class Plateau():
     def bougerPiece(self, joueur, xd, yd, xa, ya):
         piece = self.getPiece(xd, yd)
         if piece is not None:
-            if piece.get_joueur() == joueur:
+            if piece.get_joueur() is joueur:
                 if piece.peutBouger(xa, ya):
                     self.setPiece(piece, xa, ya)
                     self.delPiece(xd, yd)

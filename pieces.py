@@ -71,83 +71,15 @@ class Cavalier(Piece):
         self.repres = "c"
 
     def peutBouger(self, x_a, y_a):
+        movement = [(2, 1), (2,-1), (1, -2), (1, 2), (-2, -1), (-2, 1),
+                   (-1, -2), (-1, +2)]
         if self.plateau.getPiece(x_a, y_a) is not None:
             if self.plateau.getPiece(x_a, y_a).get_joueur() is self.joueur:
                 return False
-        if self.x+2==x_a and self.y+1==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x+2==x_a and self.y-1==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x+1==x_a and self.y-2==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x+1==x_a and self.y+2==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x-2==x_a and self.y+1==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x-2==x_a and self.y-1==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x-1==x_a and self.y-2==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        if self.x-1==x_a and self.y+2==y_a :
-            sens_c=(y_a - self.y)//abs(y_a - self.y)
-            sens_l=(x_a - self.x)//abs(x_a - self.x)
-            for j in range(self.y+sens_c,y_a,sens_c):
-                pass
-            return True
-            for i in range(self.x+sens_l,x_a,sens_l):
-                pass
-            return True
-        else :
-            return False
+        for x_m,y_m in movement:
+            if self.x + x_m == x_a and self.y + y_m == y_a :
+                return True
+        return False
 
 
 class Fou(Piece):
@@ -159,7 +91,17 @@ class Fou(Piece):
         if self.plateau.getPiece(x_a, y_a) is not None:
             if self.plateau.getPiece(x_a, y_a).get_joueur() is self.joueur:
                 return False
-
+        if abs (y_a - self.y)/abs(x_a - self.x) == 1 :
+            sens_c = (y_a - self.y) // abs(y_a - self.y)
+            sens_l = (x_a - self.x) // abs(x_a - self.x)
+            print(sens_l, sens_c)
+            for i in range(1, abs(x_a - self.x), 1) :
+                if self.plateau.getPiece(self.x + i*sens_l,
+                                        self.y + i*sens_c) is not None:
+                    return False
+            return True
+        else:
+            return False
 
 class Dame(Piece):
     def __init__(self, plateau, joueur, x, y):
@@ -167,7 +109,7 @@ class Dame(Piece):
         self.repres = "d"
 
     def peutBouger(self, x_a, y_a):
-        return Tour.peutBouger(self) or Fou.peutBouger(self)
+        return Tour.peutBouger(self, x_a, y_a) or Fou.peutBouger(self, x_a, y_a)
 
 
 class Roi(Piece):

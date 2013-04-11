@@ -1,6 +1,8 @@
 from plateau import Plateau
 from profilesloader import ProfilesLoader
 from joueur import Joueur
+import useraction
+import re
 
 def reverse_range(reverse, start, stop=None, step=1):
     if stop is None:
@@ -14,6 +16,7 @@ def reverse_range(reverse, start, stop=None, step=1):
 class Terminal():
     def __init__(self):
         self.p = None
+        self.coupValide = re.compile(r"(?P<c_d>[a-h])(?P<l_d>[1-8]) (?P<c_a>[a-h])(?P<l_a>[1-8])")
         self.profilesLoader = ProfilesLoader("profiles.chess")
 
     def afficher_plateau(self, main, blanc):
@@ -125,12 +128,22 @@ class Terminal():
     def ask(self, joueur):
         """Demande au joueur d'entrer son coup et le convertit
 en coordonnées"""
-        # TODO: Vérifier entrée utilisateur
-        entree = str(input(joueur.nom +", entrez votre coup: "))
-        dep, arr = entree.split(" ")
-        piece = (int(dep[1])-1, ord(dep[0].lower()) - ord('a'))
-        to = (int(arr[1])-1, ord(arr[0].lower()) - ord('a'))
-        return (piece, to)
+        action = useraction.UserAction(useraction.INVALID)
+        entree = str(input(joueur.nom +", entrez votre coup: ")).lower()
+        m = self.coupValide.match(entree)
+        if m is not None:
+            action.action = useraction.MOVE
+            action.dep = (int(m.group("l_d"))-1, ord(m.group("c_d")) - ord('a'))
+            action.arr = (int(m.group("l_a"))-1, ord(m.group("c_a")) - ord('a'))
+        elif entree == "roque":
+            action.action = useraction.ROQUE
+        elif entree == "groque":
+            action.action = useraction.GROQUE
+        elif entree == "exit":
+            action.action = useraction.EXIT
+        elif entree == "save":
+            action.action = useraction.SAVE
+        return action
 
     def startGame(self, blanc, noir):
         """Démarre une nouvelle partie"""
@@ -138,18 +151,21 @@ en coordonnées"""
         self.p.setup(blanc, noir)
         gagnant = None
         main = blanc
-        while gagnant == None:
+        while gagnant is None:
             self.afficher_plateau(main, blanc)
-            run = True
-            while run:
-                piece, to = self.ask(main)
-                try:
-                    self.p.bougerPiece(main, piece[0], piece[1],
-                                       to[0], to[1])
-                except Exception as e:
-                    print(e)
-                else:
-                    run = False
+            passer_main = False
+            while not passer_main:
+                action = self.ask(main)
+                if action.action == useraction.MOVE:
+                    try:
+                        self.p.bougerPiece(main, action.dep[0], action.dep[1],
+                                           action.arr[0], action.arr[1])
+                    except Exception as e:
+                        print(e)
+                    else:
+                        passer_main = True
+                elif action.action == useraction.EXIT:
+                    return
             if main == blanc:
                 main = noir
             else:
