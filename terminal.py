@@ -1,25 +1,19 @@
 from plateau import Plateau
-from profilesloader import ProfilesLoader
+from profilesmanager import ProfilesManager
+from savesmanager import SavesManager
 from joueur import Joueur
 import useraction
 import re
+from utils import reverse_range, safe_input
 
-def reverse_range(reverse, start, stop=None, step=1):
-    if stop is None:
-        stop = start
-        start = 0
-    if reverse:
-        step = -step
-        start, stop = stop-1, start-1
-    return range(start, stop, step)
 
 class Terminal():
     def __init__(self):
-        self.p = None
         self.coupValide = re.compile(r"(?P<c_d>[a-h])(?P<l_d>[1-8]) (?P<c_a>[a-h])(?P<l_a>[1-8])")
-        self.profilesLoader = ProfilesLoader("profiles.chess")
+        self.profilesManager = ProfilesManager("profiles.chess")
+        self.savesManager = SavesManager("saves/")
 
-    def afficher_plateau(self, main, blanc):
+    def afficher_plateau(self, p, main, blanc):
         """Affiche le plateau, le joueur qui a la main est en bas
 
         Le joueur blanc sert de référence à l'affichage"""
@@ -29,21 +23,21 @@ class Terminal():
             reverse = True
         entete = [chr(i) for i in
             reverse_range(not reverse, ord('A'), ord('H')+1)]
-        print("  ", end="")  # padding
+        print("    ", end="")  # padding
         print(*entete, sep=" "*3)
-        print("\u2554", "\u2550\u2550\u2550\u2564"*7,
+        print("  \u2554", "\u2550\u2550\u2550\u2564"*7,
                       "\u2550\u2550\u2550\u2557", sep="")
         for i in reverse_range(reverse, 8):
             left = True
             for j in reverse_range(not reverse, 8):
                 if left:
-                    print("\u2551", end=" ")
+                    print(i + 1, "\u2551", end=" ")
                     left = False
                 else:
                     print("\u2502", end=" ")
-                if self.p.getPiece(i,j) is not None:
-                    joueur = self.p.getPiece(i,j).get_joueur()
-                    piece = self.p.getPiece(i,j).get_repres()
+                if p.getPiece(i, j) is not None:
+                    joueur = p.getPiece(i,j).getJoueur()
+                    piece = p.getPiece(i,j).getRepres()
                     if joueur is blanc:
                         print(piece.upper(), end=" ")
                     else:
@@ -52,16 +46,16 @@ class Terminal():
                     print(" ", end=" ")
             print("\u2551", i+1)
             if i == 7 and not reverse or i == 0 and reverse:
-                print("\u255A", "\u2550\u2550\u2550\u2567"*7,
+                print("  \u255A", "\u2550\u2550\u2550\u2567"*7,
                       "\u2550\u2550\u2550\u255D", sep="")
             else:
-                print("\u255F", "\u2500\u2500\u2500\u253C"*7,
+                print("  \u255F", "\u2500\u2500\u2500\u253C"*7,
                   "\u2500\u2500\u2500\u2562", sep="")
-        print("  ", end="") # padding
+        print("    ", end="") # padding
         print(*entete, sep=" "*3)
 
     def selectProfile(self, nom, taken=[]):
-        profiles = self.profilesLoader.getProfiles()
+        profiles = self.profilesManager.getProfiles()
         takennoms = [profile.nom for profile in taken]
         profiles = [profile for profile in profiles.values()
                 if profile.nom not in takennoms]
@@ -73,11 +67,11 @@ class Terminal():
         print("n: Nouveau profil")
         run = True
         while run:
-            entree = input(">>> ")
+            entree = safe_input(">>> ", str)
             try:
                 entree = int(entree)
             except ValueError:
-                if entree[0] == "n":
+                if entree.startswith("n"):
                     choisi = self.nouveauProfil()
                     run = False
             else:
@@ -91,9 +85,9 @@ class Terminal():
     def nouveauProfil(self):
         """Dessine l'interface de création de nouveau profil"""
         run = True
-        profiles = self.profilesLoader.getProfiles()
+        profiles = self.profilesManager.getProfiles()
         while run:
-            nom = str(input("Entrez le nom du profil : "))
+            nom = safe_input("Entrez le nom du profil : ", str)
             if not nom in profiles.keys():
                 joueur = Joueur(nom, 1200)  # Classement ELO niveau débutant
                 run = False
@@ -114,59 +108,91 @@ class Terminal():
                         print("Veuillez entrer un score entier.")
                 else:
                     run = False
-            self.profilesLoader.saveProfile(joueur)
+            self.profilesManager.saveProfile(joueur)
             return joueur
 
 
     def start(self):
         """Démarrer l'interface"""
+        run = True
         print("Bienvenue dans le jeu d'échec de Loïc Labache et Paul Ecoffet")
-        blanc = self.selectProfile("blanc")
-        noir = self.selectProfile("noir", [blanc])
-        self.startGame(blanc, noir)
+        while run:
+            print("Que souhaitez-vous faire ? [N]ouvelle partie,"+
+                  "[c]harger une partie, [q]uitter")
+            entree = safe_input(">>> ", str).lower()
+            if entree.startswith('c'):
+                save = self.loadGame()
+                self.afficher_historique(save)
+                self.startGame(save.p, save.blanc, save.noir, 
+                               save.blanc_a_main)
+            elif entree.startswith('q'):
+                run = False
+            else:
+                self.startGame()
+        print("Merci d'avoir joué")
 
     def ask(self, joueur):
         """Demande au joueur d'entrer son coup et le convertit
 en coordonnées"""
         action = useraction.UserAction(useraction.INVALID)
-        entree = str(input(joueur.nom +", entrez votre coup: ")).lower()
+        entree = safe_input(joueur.nom +", entrez votre coup: ", str).lower()
         m = self.coupValide.match(entree)
         if m is not None:
             action.action = useraction.MOVE
-            action.dep = (int(m.group("l_d"))-1, ord(m.group("c_d")) - ord('a'))
-            action.arr = (int(m.group("l_a"))-1, ord(m.group("c_a")) - ord('a'))
-        elif entree == "roque":
+            action.data["dep"] = (int(m.group("l_d"))-1,
+                                  ord(m.group("c_d")) - ord('a'))
+            action.data["arr"] = (int(m.group("l_a"))-1,
+                                  ord(m.group("c_a")) - ord('a'))
+        elif entree == "roque" or entree == "0-0":
             action.action = useraction.ROQUE
-        elif entree == "groque":
-            action.action = useraction.GROQUE
+            action.data["sens"] = -1
+        elif entree == "groque" or entree == "0-0-0":
+            action.action = useraction.ROQUE
+            action.data["sens"] = 1
         elif entree == "exit":
             action.action = useraction.EXIT
         elif entree == "save":
             action.action = useraction.SAVE
         return action
 
-    def startGame(self, blanc, noir):
+    def startGame(self, p=Plateau(), blanc=None, noir=None, blanc_a_main=True):
         """Démarre une nouvelle partie"""
-        self.p = Plateau()
-        self.p.setup(blanc, noir)
+        if blanc is None and noir is None:
+            blanc = self.selectProfile("blanc")
+            noir = self.selectProfile("noir", [blanc])
+        p.setup(blanc, noir)
         gagnant = None
-        main = blanc
-        while gagnant is None:
-            self.afficher_plateau(main, blanc)
+        stop = False
+        if blanc_a_main:
+            main = blanc
+        else:
+            main = noir
+        while gagnant is None and not stop:
+            self.afficher_plateau(p, main, blanc)
             passer_main = False
             while not passer_main:
                 action = self.ask(main)
                 if action.action == useraction.MOVE:
                     try:
-                        self.p.bougerPiece(main, action.dep[0], action.dep[1],
-                                           action.arr[0], action.arr[1])
+                        p.bougerPiece(main, action.data["dep"][0], 
+                            action.data["dep"][1], action.data["arr"][0],
+                            action.data["arr"][1])
+                    except Exception as e:
+                        print(e)
+                    else:
+                        passer_main = True
+                elif action.action == useraction.ROQUE:
+                    try:
+                        p.roquer(main, action.data["sens"])
                     except Exception as e:
                         print(e)
                     else:
                         passer_main = True
                 elif action.action == useraction.EXIT:
-                    return
+                    passer_main = True
+                    stop = True
             if main == blanc:
                 main = noir
             else:
                 main = blanc
+        return gagnant

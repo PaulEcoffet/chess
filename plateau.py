@@ -7,6 +7,9 @@ class Plateau():
     def __init__(self):
         """Construction du plateau"""
         self.t = [[None for j in range(8)] for i in range(8)]
+        self.roi = {}
+        self.joueurBlanc = None
+        self.joueurNoir = None
 
     def setup(self, blanc, noir):
         """Initialisation du plateau avec les pièces placées"""
@@ -31,30 +34,44 @@ class Plateau():
         for i in range(8):
             self.t[1][i] = pieces.Pion(self, blanc, 1, i)
             self.t[6][i] = pieces.Pion(self, noir, 6, i)
-
+        self.roi[noir] = self.t[7][3]
+        self.roi[blanc] = self.t[0][3]    
+        
     def getJoueurNoir(self):
         return self.joueurNoir
     
     def getJoueurBlanc(self):
         return self.joueurBlanc
+        
+    def getRoi(self, joueur):
+        try:
+            return self.roi[joueur]
+        except:
+            raise Exception("Joueur invalide")
 
-    def getPiece(self, x, y):
-        return self.t[x][y]
+    def getPiece(self, line, col):
+        return self.t[line][col]
 
-    def setPiece(self, piece, x, y):
-        piece.updateCoord(x, y)
-        self.t[x][y] = piece
+    def setPiece(self, piece, line, col):
+        piece.updateCoord(line, col)
+        self.t[line][col] = piece
 
-    def delPiece(self, x, y):
-        self.t[x][y] = None
+    def delPiece(self, line, y):
+        self.t[line][y] = None
 
-    def bougerPiece(self, joueur, xd, yd, xa, ya):
-        piece = self.getPiece(xd, yd)
+    def bougerPiece(self, joueur, line_d, col_d, line_a, col_a):
+        piece = self.getPiece(line_d, col_d)
         if piece is not None:
-            if piece.get_joueur() is joueur:
-                if piece.peutBouger(xa, ya):
-                    self.setPiece(piece, xa, ya)
-                    self.delPiece(xd, yd)
+            if piece.getJoueur() is joueur:
+                if piece.peutBouger(line_a, col_a):
+                    self.setPiece(piece, line_a, col_a)
+                    self.delPiece(line_d, col_d)
+                elif piece is self.getRoi(joueur) and (col_a == 1 or col_a == 5):
+                    sens = (col_a - col_d)//abs(col_a - col_d)
+                    try:
+                        self.roquer(joueur, sens)
+                    except Exception:
+                        raise Exception("Mouvement non autorisé")
                 else:
                     raise Exception("Mouvement non autorisé")
             else:
@@ -62,3 +79,22 @@ class Plateau():
         else:
             raise Exception("Cette pièce n'existe pas")
 
+    def roquer(self, joueur, sens):
+        piece = self.getRoi(joueur)
+        line_d = piece.line
+        col_d = piece.col
+        if sens == 1:
+            col_t = 7
+            col_a = 5
+        else:
+            sens = -1
+            col_t = 0
+            col_a = 1
+        if piece.peutRoquer(sens):
+            tour = self.getPiece(line_d, col_t)
+            self.setPiece(piece, piece.line, col_a)
+            self.setPiece(tour, piece.line, col_a - sens)
+            self.delPiece(line_d, col_d)
+            self.delPiece(line_d, col_t)
+        else:
+            raise Exception("Roque impossible")
