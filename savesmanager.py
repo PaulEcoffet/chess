@@ -21,6 +21,7 @@ class Save:
 class SavesManager:
     def __init__(self, folder):
         self.saveFolder = os.path.join(os.path.realpath(os.path.dirname(__file__)), folder)
+        os.makedirs(self.saveFolder, exist_ok=True)
 
     def getSaves(self):
         saves = []

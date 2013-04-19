@@ -93,12 +93,51 @@ pièces.
 Projets futurs
 ==============
 Nous devons terminer la fonction peutBouger (au moins terminer le déplacement
-du roi et du pion).  Gérer le roque serait important, tout comme la prise en
+du roi et du pion). Gérer le roque serait important, tout comme la prise en
 passant. Nous devons gérer l'échec et l'échec et mat. Le match nul
 serait un plus.  La fonction pour le système de classement Elo devrait
 également faire son apparition d'ici la semaine prochaine.
 
 Enfin, nous comptons faire une interface graphique en tkinter
+
+===============================================================================
+
+Travaux effectués (05/04/13)
+=================
+Nous avons corrigé toutes les entrées utilisateurs. Le déplacement du fou, du
+cavalier et de la dame est maintenant possible. Il est donc maintenant faisable 
+de faire une partie relativement correct, bien qu'il manque quelques règles de 
+bases tel que la prise en passant pour le pion, la roque pour le roi, l'echec...
+ 
+Projets futurs
+==============
+Nous allons essayer de finaliser les règles du jeu : prise en passant, roque, 
+echec, echec et mat, partie nulle... Intégrer la fonction elo qui est écrite mais 
+qui n'est pas intégrer. Une fois cela fait, nous essayerons de faire l'interface 
+graphique.
+
+Travaux effectués (14/04/13)
+=================
+Les pions peuvent désormais manger et les joueur peuvent, de plus, roquer. Nous
+avons pas plus avancé du fait de la forte charge de travail dans les autres
+matières.
+
+Projets futurs
+==============
+Intégration du système de classement Elo, sauvegarde de partie, échec, échec
+et mat. L'interface graphique si nous avons vraiment le temps, mais cela risque
+de ne pas être fait.
+
+Travaux effectués (19/04/13)
+=================
+Nous avons implémenter le système de sauvegarde. Il sera sûrement accompagné
+d'un système d'historique afin de permettre aux joueurs de voir leur cinq
+derniers coups.
+
+Projets futurs
+==============
+Nous implémenterons la prise en passant, la promotion,  l'échec, l'échec et mat
+et le classement Elo la semaine prochaine.
 
 --
 Loïc LABACHE & Paul ECOFFET
