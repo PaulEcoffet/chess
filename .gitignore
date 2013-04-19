@@ -34,3 +34,7 @@ nosetests.xml
 .project
 .pydevproject
 .c9revisions
+
+# Project specific
+.chess
+saves/*

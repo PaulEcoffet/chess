@@ -1,9 +1,10 @@
 """Fichier contenant la logique du plateau"""
 import pieces
 
+
 class Plateau():
     """Décrit le plateau de jeu"""
-    
+
     def __init__(self):
         """Construction du plateau"""
         self.t = [[None for j in range(8)] for i in range(8)]
@@ -35,14 +36,14 @@ class Plateau():
             self.t[1][i] = pieces.Pion(self, blanc, 1, i)
             self.t[6][i] = pieces.Pion(self, noir, 6, i)
         self.roi[noir] = self.t[7][3]
-        self.roi[blanc] = self.t[0][3]    
-        
+        self.roi[blanc] = self.t[0][3]
+
     def getJoueurNoir(self):
         return self.joueurNoir
-    
+
     def getJoueurBlanc(self):
         return self.joueurBlanc
-        
+
     def getRoi(self, joueur):
         try:
             return self.roi[joueur]
@@ -67,7 +68,7 @@ class Plateau():
                     self.setPiece(piece, line_a, col_a)
                     self.delPiece(line_d, col_d)
                 elif piece is self.getRoi(joueur) and (col_a == 1 or col_a == 5):
-                    sens = (col_a - col_d)//abs(col_a - col_d)
+                    sens = (col_a - col_d) // abs(col_a - col_d)
                     try:
                         self.roquer(joueur, sens)
                     except Exception:

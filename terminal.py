@@ -1,9 +1,12 @@
+#!/bin/env python3
+
 from plateau import Plateau
 from profilesmanager import ProfilesManager
-from savesmanager import SavesManager
+from savesmanager import SavesManager, Save
 from joueur import Joueur
 import useraction
 import re
+import time
 from utils import reverse_range, safe_input
 
 
@@ -15,8 +18,8 @@ class Terminal():
 
     def afficher_plateau(self, p, main, blanc):
         """Affiche le plateau, le joueur qui a la main est en bas
-
         Le joueur blanc sert de référence à l'affichage"""
+
         if main is not blanc:
             reverse = False
         else:
@@ -111,7 +114,6 @@ class Terminal():
             self.profilesManager.saveProfile(joueur)
             return joueur
 
-
     def start(self):
         """Démarrer l'interface"""
         run = True
@@ -122,18 +124,54 @@ class Terminal():
             entree = safe_input(">>> ", str).lower()
             if entree.startswith('c'):
                 save = self.loadGame()
-                self.afficher_historique(save)
-                self.startGame(save.p, save.blanc, save.noir, 
-                               save.blanc_a_main)
+                if save is not None:
+                    self.afficher_historique(save)
+                self.startGame(save)
             elif entree.startswith('q'):
                 run = False
             else:
                 self.startGame()
         print("Merci d'avoir joué")
 
+    def loadGame(self):
+        print("Voici les sauvegardes disponibles :")
+        i = 1
+        save = None
+        saves = self.savesManager.getSaves()
+        for filename, save in saves:
+            print(filename," (", i, ") " , ":", sep="")
+            print("="*len(filename), "="*(len(str(i))+2), "===", sep="")
+            print("\tPartie entre", save.blanc.nom, "et", save.noir.nom)
+            print("\tCréer le", time.ctime(save.crea), "et modifié le", time.ctime(save.date))
+            print()
+            i += 1
+        print("Quel fichier charger ? (laissez vide pour une nouvelle partie)")
+        error = True
+        while error:
+            error = False
+            entree = input(">>> ")
+            try:
+                id = int(entree)
+            except:
+                if entree in [filename for filename, unused_save in saves]:
+                    self.savesManager.getSave(entree)
+                elif entree != "":
+                    error = True
+            else:
+                if id > 0 and id < i:
+                    save = saves[id-1][1]
+                else:
+                    error = True
+            if error:
+                print("Entrée invalide")
+        return save
+
+    def afficher_historique(self, save):
+        pass
+
     def ask(self, joueur):
         """Demande au joueur d'entrer son coup et le convertit
-en coordonnées"""
+        en coordonnées"""
         action = useraction.UserAction(useraction.INVALID)
         entree = safe_input(joueur.nom +", entrez votre coup: ", str).lower()
         m = self.coupValide.match(entree)
@@ -151,30 +189,38 @@ en coordonnées"""
             action.data["sens"] = 1
         elif entree == "exit":
             action.action = useraction.EXIT
-        elif entree == "save":
+        elif entree.startswith("save"):
             action.action = useraction.SAVE
+            try:
+                action.data["name"] = entree.split(" ", 1)[1]
+            except IndexError:
+                action.data["name"] = None
         return action
 
-    def startGame(self, p=Plateau(), blanc=None, noir=None, blanc_a_main=True):
+    def startGame(self, save=None):
         """Démarre une nouvelle partie"""
-        if blanc is None and noir is None:
+        if save is None:
             blanc = self.selectProfile("blanc")
             noir = self.selectProfile("noir", [blanc])
-        p.setup(blanc, noir)
+            p = Plateau()
+            p.setup(blanc, noir)
+            s = Save(p, blanc, noir)
+        else:
+            s = save
         gagnant = None
         stop = False
-        if blanc_a_main:
-            main = blanc
+        if s.blanc_a_main:
+            main = s.blanc
         else:
-            main = noir
+            main = s.noir
         while gagnant is None and not stop:
-            self.afficher_plateau(p, main, blanc)
+            self.afficher_plateau(s.p, main, s.blanc)
             passer_main = False
             while not passer_main:
                 action = self.ask(main)
                 if action.action == useraction.MOVE:
                     try:
-                        p.bougerPiece(main, action.data["dep"][0], 
+                        s.p.bougerPiece(main, action.data["dep"][0],
                             action.data["dep"][1], action.data["arr"][0],
                             action.data["arr"][1])
                     except Exception as e:
@@ -183,16 +229,25 @@ en coordonnées"""
                         passer_main = True
                 elif action.action == useraction.ROQUE:
                     try:
-                        p.roquer(main, action.data["sens"])
+                        s.p.roquer(main, action.data["sens"])
                     except Exception as e:
                         print(e)
                     else:
                         passer_main = True
+                elif action.action == useraction.SAVE:
+                    if action.data["name"] is not None:
+                        self.savesManager.save(s, action.data["name"])
+                    else:
+                        name = safe_input("Entrez le nom de la sauvegarde: ", str)
+                        self.savesManager.save(s, name)
                 elif action.action == useraction.EXIT:
                     passer_main = True
                     stop = True
-            if main == blanc:
-                main = noir
+            if main == s.blanc:
+                s.blanc_a_main = False
+                main = s.noir
             else:
-                main = blanc
+                s.blanc_a_main = True
+                main = s.blanc
+            self.savesManager.save(s, "autosave")
         return gagnant
