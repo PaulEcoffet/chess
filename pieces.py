@@ -39,7 +39,7 @@ class Pion(Piece):
         self.repres = "p"
 
     def peutBouger(self, line_a, col_a):
-        if self.joueur is self.p.getJoueurNoir():
+        if self.joueur == self.p.getJoueurNoir():
             sens = -1
         else:
             sens = 1
@@ -60,7 +60,7 @@ class Pion(Piece):
         if (abs(self.col - col_a) == 1 and self.line + sens == line_a):
             piece = self.p.getPiece(line_a, col_a)
             if (piece is not None and
-                    piece.getJoueur() is not self.getJoueur()):
+                    piece.getJoueur() != self.getJoueur()):
                 return True
         return False
 
@@ -72,7 +72,7 @@ class Tour(Piece):
 
     def peutBouger(self, line_a, col_a):
         if self.p.getPiece(line_a, col_a) is not None:
-            if self.p.getPiece(line_a, col_a).getJoueur() is self.joueur:
+            if self.p.getPiece(line_a, col_a).getJoueur() == self.joueur:
                 return False
         if self.line == line_a and self.col != col_a:
             sens = (col_a - self.col) // abs(col_a - self.col)
@@ -99,7 +99,7 @@ class Cavalier(Piece):
         movement = [(2, 1), (2, -1), (1, -2), (1, 2), (-2, -1), (-2, 1),
                     (-1, -2), (-1, +2)]
         if self.p.getPiece(line_a, col_a) is not None:
-            if self.p.getPiece(line_a, col_a).getJoueur() is self.joueur:
+            if self.p.getPiece(line_a, col_a).getJoueur() == self.joueur:
                 return False
         for x_m, y_m in movement:
             if self.line + x_m == line_a and self.col + y_m == col_a:
@@ -114,18 +114,18 @@ class Fou(Piece):
 
     def peutBouger(self, line_a, col_a):
         if self.p.getPiece(line_a, col_a) is not None:
-            if self.p.getPiece(line_a, col_a).getJoueur() is self.joueur:
+            if self.p.getPiece(line_a, col_a).getJoueur() == self.joueur:
                 return False
-        if abs(col_a - self.col) / abs(line_a - self.line) == 1:
-            sens_c = (col_a - self.col) // abs(col_a - self.col)
-            sens_l = (line_a - self.line) // abs(line_a - self.line)
-            for i in range(1, abs(line_a - self.line), 1):
-                if self.p.getPiece(self.line + i * sens_l,
-                                   self.col + i * sens_c) is not None:
-                    return False
-            return True
-        else:
-            return False
+        if self.line != line_a and self.col != col_a:
+            if abs(col_a - self.col) / abs(line_a - self.line) == 1:
+                sens_c = (col_a - self.col) // abs(col_a - self.col)
+                sens_l = (line_a - self.line) // abs(line_a - self.line)
+                for i in range(1, abs(line_a - self.line), 1):
+                    if self.p.getPiece(self.line + i * sens_l,
+                                       self.col + i * sens_c) is not None:
+                        return False
+                return True
+        return False
 
 
 class Dame(Piece):
@@ -146,7 +146,7 @@ class Roi(Piece):
         mouvement = [(line, col) for line in range(-1, 2) for col in range(-1, 2)
                      if not (col == 0 and line == 0)]
         if self.p.getPiece(line_a, col_a) is not None:
-            if self.p.getPiece(line_a, col_a).getJoueur() is self.joueur:
+            if self.p.getPiece(line_a, col_a).getJoueur() == self.joueur:
                 return False
         for (xm, ym) in mouvement:
             if self.line + xm == line_a and self.col + ym == col_a:

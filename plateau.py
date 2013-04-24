@@ -70,7 +70,7 @@ class Plateau():
                     rollback = [[None for i in range(8)] for j in range(8)]
                     for i in range(8):
                         for j in range(8):
-                            rollback[i][j] = copy.copy(self.t[i][j])
+                            rollback[i][j] = copy.deepcopy(self.t[i][j])
                     self.setPiece(piece, line_a, col_a)
                     self.delPiece(line_d, col_d)
                     if self.echec(joueur):
@@ -82,7 +82,7 @@ class Plateau():
                     sens = (col_a - col_d) // abs(col_a - col_d)
                     try:
                         self.roquer(joueur, sens)
-                    except Exception:
+                    except EchecException:
                         raise EchecException("Mouvement non autorisé")
                 else:
                     raise EchecException("Mouvement non autorisé")

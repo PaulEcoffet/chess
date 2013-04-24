@@ -3,8 +3,11 @@
 from terminal import Terminal
 
 def main():
-    interface = Terminal()
-    interface.start()
+    try:
+        interface = Terminal()
+        interface.start()
+    except KeyboardInterrupt:
+        print("Bye bye")
 
 if __name__ == "__main__":
     main()

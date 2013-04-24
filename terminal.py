@@ -8,6 +8,7 @@ from joueur import Joueur
 import useraction
 import re
 import time
+import elo
 from utils import reverse_range, safe_input
 
 
@@ -86,52 +87,56 @@ class Terminal():
                 print("Entrée non valide")
         return choisi
 
-    def nouveauProfil(self):
+    def nouveauProfil(self, nom=""):
         """Dessine l'interface de création de nouveau profil"""
         run = True
         profiles = self.profilesManager.getProfiles()
-        while run:
+        while nom == "":
             nom = safe_input("Entrez le nom du profil : ", str)
-            if not nom in profiles.keys():
-                joueur = Joueur(nom, 1200)  # Classement ELO niveau débutant
-                run = False
-            else:
-                print("Un profil porte déjà ce nom. \
-                        Veuillez en utilisez un autre.")
-            print("Si vous possèdez un score ELO, veuillez l'indiquer, \
-                    sinon, laissez le champ vide")
-            run = True
-            while run:
-                entree = input("Votre score ELO (1200) :")
-                try:
-                    joueur.elo = int(entree)
-                except:
-                    if(entree == ""):
-                        run = False
-                    else:
-                        print("Veuillez entrer un score entier.")
-                else:
+            if nom in profiles.keys():
+                print("Un profil porte déjà ce nom."
+                      "Veuillez en utilisez un autre.")
+                nom = ""
+        joueur = Joueur(nom, 1200)  # Classement ELO niveau débutant
+        print("Si vous possèdez un score ELO, veuillez l'indiquer,"
+              "sinon, laissez le champ vide")
+        while run:
+            entree = input("Votre score ELO (1200) :")
+            try:
+                joueur.elo = int(entree)
+            except:
+                if(entree == ""):
                     run = False
-            self.profilesManager.saveProfile(joueur)
-            return joueur
+                else:
+                    print("Veuillez entrer un score entier.")
+            else:
+                run = False
+        self.profilesManager.saveProfile(joueur)
+        return joueur
 
     def start(self):
         """Démarrer l'interface"""
         run = True
         print("Bienvenue dans le jeu d'échec de Loïc Labache et Paul Ecoffet")
         while run:
+            save = None
+            start = False
             print("Que souhaitez-vous faire ? [N]ouvelle partie," +
-                  "[c]harger une partie, [q]uitter")
+                  "[c]harger une partie, afficher l'[a]ide, [q]uitter")
             entree = safe_input(">>> ", str).lower()
             if entree.startswith('c'):
+                start = True
                 save = self.loadGame()
                 if save is not None:
                     self.afficher_historique(save)
-                self.startGame(save)
             elif entree.startswith('q'):
                 run = False
+            elif entree.startswith('n') or entree == "":
+                start = True
             else:
-                self.startGame()
+                print("Entrée invalide")
+            if start:
+                self.startGame(save)
         print("Merci d'avoir joué")
 
     def loadGame(self):
@@ -142,7 +147,7 @@ class Terminal():
         for filename, save in saves:
             print(filename, " (", i, ") ", ":", sep="")
             print("=" * len(filename), "=" * (len(str(i)) + 2), "===", sep="")
-            print("\tPartie entre", save.blanc.nom, "et", save.noir.nom)
+            print("\tPartie entre", save.blanc, "et", save.noir)
             print("\tCréer le", time.ctime(save.crea), "et modifié le", time.ctime(save.date))
             print()
             i += 1
@@ -174,7 +179,7 @@ class Terminal():
         """Demande au joueur d'entrer son coup et le convertit
         en coordonnées"""
         action = useraction.UserAction(useraction.INVALID)
-        entree = safe_input(joueur.nom + ", entrez votre coup: ", str).lower()
+        entree = safe_input(joueur + ", entrez votre coup: ", str).lower()
         m = self.coupValide.match(entree)
         if m is not None:
             action.action = useraction.MOVE
@@ -198,28 +203,38 @@ class Terminal():
                 action.data["name"] = None
         return action
 
-    def startGame(self, save=None):
-        """Démarre une nouvelle partie"""
+    def initSave(self, save=None):
         if save is None:
             blanc = self.selectProfile("blanc")
             noir = self.selectProfile("noir", [blanc])
             p = Plateau()
-            p.setup(blanc, noir)
-            s = Save(p, blanc, noir)
+            p.setup(blanc.nom, noir.nom)
+            s = Save(p, blanc.nom, noir.nom)
         else:
             s = save
+            if self.profilesManager.getProfileByName(s.blanc) is None:
+                print("Le profil", s.blanc, "n'existe pas, veuillez le créer")
+                self.nouveauProfil(s.blanc)
+            if self.profilesManager.getProfileByName(s.noir) is None:
+                print("Le profil", s.noir, "n'existe pas, veuillez le créer")
+                self.nouveauProfil(s.noir)
+        return s
+
+    def startGame(self, save=None):
+        """Démarre une nouvelle partie"""
         gagnant = None
         stop = False
+        s = self.initSave(save)
         if s.blanc_a_main:
-            main = s.blanc
+            main, non_main = s.blanc, s.noir
         else:
-            main = s.noir
+            main, non_main = s.noir, s.blanc
         while gagnant is None and not stop:
             self.afficher_plateau(s.p, main, s.blanc)
             passer_main = False
             if s.p.echec(main):
                 print("=======================================================")
-                print(main.nom, ", vous êtes en échec ", sep="", end="")
+                print(main, ", vous êtes en échec ", sep="", end="")
                 if s.p.echec_et_mat(main):
                     print("et mat ", sep="", end="")
                     if main is s.blanc:
@@ -249,20 +264,19 @@ class Terminal():
                 elif action.action == useraction.SAVE:
                     if action.data["name"] is not None:
                         self.savesManager.save(s, action.data["name"])
+                        print("Le fichier a été sauvé sous le nom de" + action.data["name"])
                     else:
                         name = safe_input("Entrez le nom de la sauvegarde: ", str)
                         try:
                             self.savesManager.save(s, name)
                         except:
                             print("La sauvegarde n'a pas pu aboutir")
+                        else:
+                            print("Le fichier a été sauvé sous le nom de" + action.data["name"])
                 elif action.action == useraction.EXIT:
                     passer_main = True
                     stop = True
-            if main == s.blanc:
-                s.blanc_a_main = False
-                main = s.noir
-            else:
-                s.blanc_a_main = True
-                main = s.blanc
+            s.blanc_a_main = not s.blanc_a_main
+            main, non_main = non_main, main
             self.savesManager.save(s, "autosave")
-        return gagnant
+        elo.saveElo(s.blanc, s.noir, gagnant)
